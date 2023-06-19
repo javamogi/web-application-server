@@ -3,9 +3,12 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Map;
 
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 import util.RequestUtils;
 
 public class RequestHandler extends Thread {
@@ -29,17 +32,25 @@ public class RequestHandler extends Thread {
                 return;
             }
             log.debug(line);
-            String url = RequestUtils.getUrl(line);
+            String[] tokens = line.split(" ");
             while(!"".equals(line)){
                 line = br.readLine();
                 log.debug(line);
             }
 
-            DataOutputStream dos = new DataOutputStream(out);
-//            byte[] body = "Hello World".getBytes();
-            byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+            String url = tokens[1];
+            if(url.startsWith("/user/create")){
+                int index = url.indexOf("?");
+                String queryString = url.substring(index+1);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(queryString);
+                User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
+                log.debug("user : {}", user);
+            } else {
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
