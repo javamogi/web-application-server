@@ -75,7 +75,6 @@ public class RequestHandler extends Thread {
                 if(!isLogin){
                     responseResource(out, "/user/login.html");
                 }
-
                 Collection<User> users = DataBase.findAll();
                 Iterator<User> user = users.iterator();
                 StringBuilder sb = new StringBuilder();
@@ -84,9 +83,29 @@ public class RequestHandler extends Thread {
                     sb.append(u.getUserId());
                 }
                 responseData(out, sb.toString());
+            } else if(url.contains(".css")){
+                responseCssResource(out, url);
             } else {
                 responseResource(out, url);
             }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void responseCssResource(OutputStream out, String path) throws IOException {
+        DataOutputStream dos = new DataOutputStream(out);
+        byte[] body = Files.readAllBytes(new File("./webapp" + path).toPath());
+        response200CssHeader(dos, body.length);
+        responseBody(dos, body);
+    }
+
+    private void response200CssHeader(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/css;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
