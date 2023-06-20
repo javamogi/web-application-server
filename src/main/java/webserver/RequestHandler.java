@@ -38,31 +38,28 @@ public class RequestHandler extends Thread {
             log.debug(line);
             String[] tokens = line.split(" ");
             int contentLength = 0;
-            boolean isLogin = false;
+            boolean logined = false;
             while(!"".equals(line)){
                 line = br.readLine();
-//                log.debug(line);
-                if(line.startsWith("Content-Length")){
-                    String[] contentLengthArr = line.split(": ");
-                    contentLength = Integer.parseInt(contentLengthArr[1]);
-                } else if(line.startsWith("Cookie")){
-                    String[] cookieArr = line.split(": ");
-                    Map<String, String> cookies = HttpRequestUtils.parseCookies(cookieArr[1]);
-                    isLogin = Boolean.parseBoolean(cookies.get("logined"));
+                if(line.contains("Content-Length")){
+                    contentLength = getContentLength(line);
+                }
+                if(line.contains("Cookie")){
+                    logined = isLogin(line);
                 }
             }
 
             String url = tokens[1];
-            if(url.startsWith("/user/create")){
-                String content = IOUtils.readData(br, contentLength);
-                Map<String, String> params = HttpRequestUtils.parseQueryString(content);
+            if(url.equals("/user/create")){
+                String body = IOUtils.readData(br, contentLength);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
                 User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
                 log.debug("user : {}", user);
                 DataBase.addUser(user);
                 response302Header(out, "/user/login.html");
             } else if (url.equals("/user/login")){
-                String content = IOUtils.readData(br, contentLength);
-                Map<String, String> params = HttpRequestUtils.parseQueryString(content);
+                String body = IOUtils.readData(br, contentLength);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
                 String userId = params.get("userId");
                 String password = params.get("password");
                 User user = DataBase.findUserById(userId);
@@ -72,18 +69,23 @@ public class RequestHandler extends Thread {
                 }
                 responseLoginSuccess(out, "/index.html");
             } else if(url.equals("/user/list")){
-                if(!isLogin){
+                if(!logined){
                     responseResource(out, "/user/login.html");
+                    return;
                 }
                 Collection<User> users = DataBase.findAll();
-                Iterator<User> user = users.iterator();
                 StringBuilder sb = new StringBuilder();
-                while(user.hasNext()){
-                    User u = user.next();
-                    sb.append(u.getUserId());
+                sb.append("<table border'1'>");
+                for(User user : users){
+                    sb.append("<tr>");
+                    sb.append("<td>" + user.getUserId() + "</td>");
+                    sb.append("<td>" + user.getName() + "</td>");
+                    sb.append("<td>" + user.getEmail() + "</td>");
+                    sb.append("</tr>");
                 }
+                sb.append("</table>");
                 responseData(out, sb.toString());
-            } else if(url.contains(".css")){
+            } else if(url.endsWith(".css")){
                 responseCssResource(out, url);
             } else {
                 responseResource(out, url);
@@ -91,6 +93,21 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private boolean isLogin(String line) {
+        String[] headerTokens = line.split(":");
+        Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
+        String value = cookies.get("logined");
+        if (value == null){
+            return false;
+        }
+        return Boolean.parseBoolean(value);
+    }
+
+    private int getContentLength(String line) {
+        String[] headerTokens = line.split(":");
+        return Integer.parseInt(headerTokens[1].trim());
     }
 
     private void responseCssResource(OutputStream out, String path) throws IOException {
