@@ -31,6 +31,12 @@ public class HttpResponse {
         responseBody(body);
     }
 
+    public void forwardBody(String path){
+        byte[] body = path.getBytes();
+        response200Header(body.length);
+        responseBody(body);
+    }
+
     public void sendRedirect(String path) {
         addHeader("Location", path);
         try {
