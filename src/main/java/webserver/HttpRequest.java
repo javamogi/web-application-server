@@ -1,5 +1,7 @@
 package webserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
 
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest {
+    private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
     private String requestFirstLine;
 
@@ -18,26 +21,31 @@ public class HttpRequest {
 
     private Map<String, String> params;
 
-    public HttpRequest(InputStream in) throws IOException {
+    public HttpRequest(InputStream in) {
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        String line = br.readLine();
-        requestFirstLine = line;
-        headers = new HashMap<>();
-        line = br.readLine();
-        while(line != null && !line.equals("")){
-            String[] tokens = line.split(":");
-            headers.put(tokens[0], tokens[1].trim());
+        String line = null;
+        try {
             line = br.readLine();
-        }
+            requestFirstLine = line;
+            headers = new HashMap<>();
+            line = br.readLine();
+            while(line != null && !line.equals("")){
+                String[] tokens = line.split(":");
+                headers.put(tokens[0], tokens[1].trim());
+                line = br.readLine();
+            }
 
-        String queryString = null;
-        if (getMethod().equals("GET")){
-            String[] tokens = requestFirstLine.split(" ");
-            queryString = tokens[1].substring(tokens[1].indexOf("?") + 1);
-        } else {
-            queryString = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+            String queryString = null;
+            if (getMethod().equals("GET")){
+                String[] tokens = requestFirstLine.split(" ");
+                queryString = tokens[1].substring(tokens[1].indexOf("?") + 1);
+            } else {
+                queryString = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+            }
+            params = HttpRequestUtils.parseQueryString(queryString);
+        } catch (IOException e) {
+            log.debug("exception message : {}", e.getMessage());
         }
-        params = HttpRequestUtils.parseQueryString(queryString);
     }
 
     public String getMethod() throws IOException {
