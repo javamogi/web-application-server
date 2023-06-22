@@ -34,21 +34,22 @@ public class RequestHandler extends Thread {
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
 
-            // controller 등록
-            Map<String, Controller> controllers = new HashMap<>();
-            controllers.put("/user/create", new CreateUserController());
-            controllers.put("/user/login", new LoginController());
-            controllers.put("/user/list", new ListUserController());
-
-            Controller controller = controllers.get(request.getPath());
+            Controller controller = RequestMapping.getController(request.getPath());
             if (controller == null){
-                response.forward(request.getPath());
-                return;
+                String path = getDefaultPath(request.getPath());
+                response.forward(path);
+            } else {
+                controller.service(request, response);
             }
-            controller.service(request, response);
-
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    private String getDefaultPath(String path){
+        if(path.equals("/")){
+            return "/index.html";
+        }
+        return path;
     }
 }

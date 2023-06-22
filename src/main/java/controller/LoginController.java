@@ -7,10 +7,10 @@ import webserver.HttpResponse;
 
 import java.io.IOException;
 
-public class LoginController implements Controller {
+public class LoginController extends AbstractController {
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws Exception {
+    protected void doPost(HttpRequest request, HttpResponse response) {
         User user = DataBase.findUserById(request.getParameter("userId"));
         if (user == null || !user.getPassword().equals(request.getParameter("password"))) {
             response.forward("/user/login_failed.html");
@@ -19,4 +19,5 @@ public class LoginController implements Controller {
         response.addHeader("Set-Cookie", "logined=true; Path=/");
         response.sendRedirect("/index.html");
     }
+
 }

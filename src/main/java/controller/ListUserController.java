@@ -2,19 +2,16 @@ package controller;
 
 import db.DataBase;
 import model.User;
-import util.HttpRequestUtils;
 import webserver.HttpRequest;
 import webserver.HttpResponse;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 
-public class ListUserController implements Controller{
+public class ListUserController extends AbstractController{
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws Exception {
-        if(!isLogin(request)){
+    protected void doGet(HttpRequest request, HttpResponse response) {
+        if(!isLogin(request.getCookie("logined"))){
             response.forward("/user/login.html");
             return;
         }
@@ -32,10 +29,7 @@ public class ListUserController implements Controller{
         response.forwardBody(sb.toString());
     }
 
-    private boolean isLogin(HttpRequest request) throws IOException {
-        String cookie = request.getHeader("Cookie");
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
-        String value = cookies.get("logined");
+    private boolean isLogin(String value) {
         if (value == null){
             return false;
         }

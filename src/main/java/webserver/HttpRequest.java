@@ -15,57 +15,62 @@ import java.util.Map;
 public class HttpRequest {
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
-    private String requestFirstLine;
+    private Map<String, String> headers = new HashMap<>();
 
-    private Map<String, String> headers;
+    private Map<String, String> params = new HashMap<>();
+    private RequestLine requestLine;
 
-    private Map<String, String> params;
+    private Map<String, String> cookies;
 
     public HttpRequest(InputStream in) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        String line = null;
         try {
-            line = br.readLine();
-            requestFirstLine = line;
-            headers = new HashMap<>();
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line = br.readLine();
+            if(line == null){
+                return;
+            }
+
+            requestLine = new RequestLine(line);
+
             line = br.readLine();
             while(line != null && !line.equals("")){
+                log.debug("header : {}", line);
                 String[] tokens = line.split(":");
-                headers.put(tokens[0], tokens[1].trim());
+                headers.put(tokens[0].trim(), tokens[1].trim());
                 line = br.readLine();
             }
 
-            String queryString = null;
-            if (getMethod().equals("GET")){
-                String[] tokens = requestFirstLine.split(" ");
-                queryString = tokens[1].substring(tokens[1].indexOf("?") + 1);
+            cookies = HttpRequestUtils.parseCookies(getHeader("Cookie"));
+
+            if(getMethod().isPost()){
+                String body = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+                params = HttpRequestUtils.parseQueryString(body);
             } else {
-                queryString = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+                params = requestLine.getParams();
             }
-            params = HttpRequestUtils.parseQueryString(queryString);
+
         } catch (IOException e) {
             log.debug("exception message : {}", e.getMessage());
         }
     }
 
-    public String getMethod() throws IOException {
-        String[] tokens = requestFirstLine.split(" ");
-        return tokens[0];
+    public HttpMethod getMethod() {
+        return requestLine.getMethod();
     }
 
-    public String getPath() throws IOException {
-        String[] tokens = requestFirstLine.split(" ");
-        if(!tokens[1].contains("?")){
-            return tokens[1];
-        }
-        return tokens[1].substring(0, tokens[1].indexOf("?"));
+    public String getPath() {
+        return requestLine.getPath();
     }
 
-    public String getHeader(String connection) throws IOException {
-        return headers.get(connection);
+    public String getHeader(String name) {
+        return headers.get(name);
     }
 
-    public String getParameter(String param) {
-        return params.get(param);
+    public String getParameter(String name) {
+        return params.get(name);
+    }
+
+    public String getCookie(String name){
+        return cookies.get(name);
     }
 }
