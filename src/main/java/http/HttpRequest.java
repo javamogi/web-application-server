@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import util.HttpRequestUtils;
 import util.IOUtils;
 
 public class HttpRequest {
@@ -19,6 +22,8 @@ public class HttpRequest {
 	
 	private RequestParams requestParams = new RequestParams();
 
+	private Map<String, String> cookies = new HashMap<>();
+
 	public HttpRequest(InputStream is) {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -26,6 +31,7 @@ public class HttpRequest {
 			requestParams.addQueryString(requestLine.getQueryString());
 			headers = processHeaders(br);
 			requestParams.addBody(IOUtils.readData(br, headers.getContentLength()));
+			cookies = HttpRequestUtils.parseCookies(headers.getHeader("Cookie"));
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}
@@ -62,5 +68,13 @@ public class HttpRequest {
 
 	public String getParameter(String name) {
 		return requestParams.getParameter(name);
+	}
+
+	public String getCookie(String name){
+		return cookies.get(name);
+	}
+
+	public HttpSession getSession(){
+		return HttpSessions.getSession(getCookie("JSESSIONID"));
 	}
 }
