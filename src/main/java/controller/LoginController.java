@@ -5,8 +5,6 @@ import model.User;
 import webserver.HttpRequest;
 import webserver.HttpResponse;
 
-import java.io.IOException;
-
 public class LoginController extends AbstractController {
 
     @Override
