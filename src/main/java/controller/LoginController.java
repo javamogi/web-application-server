@@ -15,8 +15,6 @@ public class LoginController extends AbstractController {
 
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
-
-//                response.addHeader("Set-Cookie", "logined=true");
                 response.sendRedirect("/index.html");
             } else {
                 response.sendRedirect("/user/login_failed.html");

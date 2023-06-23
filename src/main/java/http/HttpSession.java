@@ -2,12 +2,11 @@ package http;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class HttpSession {
 
     private String id;
-    private Map<String, Object> attribute = new HashMap<>();
+    private Map<String, Object> values = new HashMap<>();
 
     public HttpSession(String id) {
         this.id = id;
@@ -18,18 +17,18 @@ public class HttpSession {
     }
 
     public void setAttribute(String name, Object value){
-        attribute.put(name, value);
+        values.put(name, value);
     }
 
     public Object getAttribute(String name){
-        return attribute.get(name);
+        return values.get(name);
     }
 
     public void removeAttribute(String name){
-        attribute.remove(name);
+        values.remove(name);
     }
 
     public void invalidate(){
-        attribute.clear();
+        HttpSessions.remove(id);
     }
 }

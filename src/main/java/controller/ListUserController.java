@@ -11,7 +11,7 @@ import java.util.Collection;
 public class ListUserController extends AbstractController {
     @Override
     public void doGet(HttpRequest request, HttpResponse response) {
-        if (!isLogin(request)) {
+        if (!isLogin(request.getSession())) {
             response.sendRedirect("/user/login.html");
             return;
         }
@@ -30,8 +30,7 @@ public class ListUserController extends AbstractController {
         response.forwardBody(sb.toString());
     }
 
-    private boolean isLogin(HttpRequest req) {
-        HttpSession session = req.getSession();
+    private boolean isLogin(HttpSession session) {
         Object obj = session.getAttribute("user");
         if (obj == null) {
             return false;

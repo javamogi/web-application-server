@@ -70,11 +70,11 @@ public class HttpRequest {
 		return requestParams.getParameter(name);
 	}
 
-	public String getCookie(String name){
-		return cookies.get(name);
+	public HttpSession getSession(){
+		return HttpSessions.getSession(getCookies().getCookie("JSESSIONID"));
 	}
 
-	public HttpSession getSession(){
-		return HttpSessions.getSession(getCookie("JSESSIONID"));
+	public HttpCookie getCookies(){
+		return new HttpCookie(getHeader("Cookie"));
 	}
 }
