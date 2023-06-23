@@ -1,21 +1,23 @@
 package controller;
 
-import db.DataBase;
 import model.User;
-import webserver.HttpRequest;
-import webserver.HttpResponse;
+import db.DataBase;
+import http.HttpRequest;
+import http.HttpResponse;
 
 public class LoginController extends AbstractController {
-
     @Override
-    protected void doPost(HttpRequest request, HttpResponse response) {
+    public void doPost(HttpRequest request, HttpResponse response) {
         User user = DataBase.findUserById(request.getParameter("userId"));
-        if (user == null || !user.getPassword().equals(request.getParameter("password"))) {
-            response.forward("/user/login_failed.html");
-            return;
+        if (user != null) {
+            if (user.login(request.getParameter("password"))) {
+                response.addHeader("Set-Cookie", "logined=true");
+                response.sendRedirect("/index.html");
+            } else {
+                response.sendRedirect("/user/login_failed.html");
+            }
+        } else {
+            response.sendRedirect("/user/login_failed.html");
         }
-        response.addHeader("Set-Cookie", "logined=true; Path=/");
-        response.sendRedirect("/index.html");
     }
-
 }

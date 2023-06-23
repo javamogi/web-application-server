@@ -53,7 +53,7 @@
                 <li class="nav-divider"></li>
                 <li><a href="#"><i class="glyphicon glyphicon-cog" style="color:#dd1111;"></i> Settings</a></li>
             </ul>
-            
+
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse2">
             	<span class="sr-only">Toggle navigation</span>
             	<span class="icon-bar"></span>
@@ -144,6 +144,9 @@
                                           <form class="delete-answer-form" action="/questions/413/answers/1405" method="POST">
                                               <input type="hidden" name="_method" value="DELETE">
                                               <button type="submit" class="delete-answer-button">삭제</button>
+                                          <form class="form-delete" action="/questions/413/answers/1405" method="POST">
+                                              <input type="hidden" name="_method" value="DELETE">
+                                              <button type="submit" class="link-delete-article">삭제</button>
                                           </form>
                                       </li>
                                   </ul>
@@ -173,6 +176,7 @@
                                           <form class="form-delete" action="/questions/413/answers/1405" method="POST">
                                               <input type="hidden" name="_method" value="DELETE">
                                               <button type="submit" class="delete-answer-button">삭제</button>
+                                              <button type="submit" class="link-delete-article">삭제</button>
                                           </form>
                                       </li>
                                   </ul>
@@ -183,6 +187,7 @@
                                   <textarea class="form-control" placeholder="Update your status"></textarea>
                               </div>
                               <button class="btn btn-success pull-right" type="button">답변하기</button>
+                              <button class="btn btn-success pull-right" type="button">Post</button>
                               <div class="clearfix" />
                           </form>
                       </div>

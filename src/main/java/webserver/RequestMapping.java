@@ -1,12 +1,12 @@
 package webserver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import controller.Controller;
 import controller.CreateUserController;
 import controller.ListUserController;
 import controller.LoginController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class RequestMapping {
     private static Map<String, Controller> controllers = new HashMap<>();
@@ -17,7 +17,7 @@ public class RequestMapping {
         controllers.put("/user/list", new ListUserController());
     }
 
-    public static Controller getController(String requestUrl){
+    public static Controller getController(String requestUrl) {
         return controllers.get(requestUrl);
     }
 }
